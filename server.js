@@ -1,62 +1,46 @@
 const express = require("express");
 const cors = require("cors");
-const pool = require("./db");
+const villages = require("./villages.json");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-//  Home route
+// ✅ Home route
 app.get("/", (req, res) => {
-  res.send("Village API is running 🚀");
+  res.send("Village API running 🚀");
 });
 
-//  PAGINATION API
-app.get("/villages", async (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 50;
-    const offset = (page - 1) * limit;
+// ✅ Get villages (pagination)
+app.get("/villages", (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 20;
 
-    const result = await pool.query(
-      "SELECT * FROM villages ORDER BY village_code LIMIT $1 OFFSET $2",
-      [limit, offset]
-    );
+  const start = (page - 1) * limit;
+  const end = start + limit;
 
-    res.json({
-      page,
-      limit,
-      data: result.rows,
-    });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
-  }
+  const data = villages.slice(start, end);
+
+  res.json({
+    page,
+    limit,
+    data,
+  });
 });
 
-//  SEARCH API
-app.get("/villages/search", async (req, res) => {
-  try {
-    const { name } = req.query;
+// ✅ Search villages
+app.get("/villages/search", (req, res) => {
+  const name = req.query.name?.toLowerCase() || "";
 
-    if (!name) {
-      return res.status(400).json({ error: "name query is required" });
-    }
+  const results = villages.filter(v =>
+    v.village_name.toLowerCase().includes(name)
+  );
 
-    const result = await pool.query(
-      "SELECT * FROM villages WHERE village_name ILIKE $1 LIMIT 50",
-      [`%${name}%`]
-    );
-
-    res.json(result.rows);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
-  }
+  res.json(results.slice(0, 50));
 });
 
-// 🚀 SERVER START
-const PORT = 5000;
+// ✅ Start server
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
