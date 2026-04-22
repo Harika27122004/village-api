@@ -6,12 +6,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ Home route
+// Home
 app.get("/", (req, res) => {
   res.send("Village API running 🚀");
 });
 
-// ✅ Get villages (pagination)
+// Pagination
 app.get("/villages", (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 20;
@@ -19,16 +19,14 @@ app.get("/villages", (req, res) => {
   const start = (page - 1) * limit;
   const end = start + limit;
 
-  const data = villages.slice(start, end);
-
   res.json({
     page,
     limit,
-    data,
+    data: villages.slice(start, end),
   });
 });
 
-// ✅ Search villages
+// Search
 app.get("/villages/search", (req, res) => {
   const name = req.query.name?.toLowerCase() || "";
 
@@ -39,7 +37,7 @@ app.get("/villages/search", (req, res) => {
   res.json(results.slice(0, 50));
 });
 
-// ✅ Start server
+// Start
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
