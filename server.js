@@ -1,15 +1,11 @@
 const express = require("express");
 const cors = require("cors");
-const villages = require("./villages.json"); 
+const villages = require("./villages.json");
 
 const app = express();
 
 
-app.use(
-  cors({
-    origin: "*",
-  })
-);
+app.use(cors());
 
 app.use(express.json());
 
@@ -26,12 +22,10 @@ app.get("/villages", (req, res) => {
   const start = (page - 1) * limit;
   const end = start + limit;
 
-  const data = villages.slice(start, end);
-
   res.json({
     page,
     limit,
-    data,
+    data: villages.slice(start, end),
   });
 });
 
